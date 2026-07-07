@@ -2,6 +2,62 @@ import type { CreateProductRequest, HealthResponse, LoginResponse, Product } fro
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:7243';
 
+function parseApiError(errorBody: string, status: number): string {
+  if (!errorBody.trim()) {
+    return getDefaultErrorMessage(status);
+  }
+
+  try {
+    const parsed = JSON.parse(errorBody) as {
+      detail?: string;
+      title?: string;
+      message?: string;
+      errors?: Record<string, string[]>;
+    };
+
+    if (parsed.detail) {
+      return parsed.detail;
+    }
+
+    if (parsed.message) {
+      return parsed.message;
+    }
+
+    if (parsed.errors) {
+      const messages = Object.values(parsed.errors).flat();
+      if (messages.length > 0) {
+        return messages.join(' ');
+      }
+    }
+
+    if (parsed.title && parsed.title !== 'Unauthorized' && parsed.title !== 'BadRequest') {
+      return parsed.title;
+    }
+  } catch {
+    // Not JSON — use raw text if it looks like a plain message
+    if (!errorBody.startsWith('{')) {
+      return errorBody;
+    }
+  }
+
+  return getDefaultErrorMessage(status);
+}
+
+function getDefaultErrorMessage(status: number): string {
+  switch (status) {
+    case 401:
+      return 'Invalid username or password.';
+    case 403:
+      return 'You do not have permission to perform this action.';
+    case 404:
+      return 'The requested resource was not found.';
+    case 400:
+      return 'The request was invalid. Please check your input.';
+    default:
+      return 'Something went wrong. Please try again.';
+  }
+}
+
 class ApiClient {
   private token: string | null = null;
 
@@ -24,7 +80,7 @@ class ApiClient {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      throw new Error(errorBody || `Request failed with status ${response.status}`);
+      throw new Error(parseApiError(errorBody, response.status));
     }
 
     if (response.status === 204) {
