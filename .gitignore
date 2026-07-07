@@ -1,0 +1,30 @@
+## Build artifacts
+bin/
+obj/
+out/
+
+## IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+## Database
+*.db
+*.db-shm
+*.db-wal
+
+## Node
+node_modules/
+dist/
+*.local
+
+## OS
+Thumbs.db
+.DS_Store
+
+## Logs
+*.log
+
+## Environment
+.env.production
