@@ -10,7 +10,7 @@ namespace ProductsService.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController(IConfiguration configuration, JwtTokenGenerator tokenGenerator) : ControllerBase
 {
-    [HttpPost("login")]
+    [HttpPost("login")] 
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public IActionResult Login([FromBody] LoginRequest request)
